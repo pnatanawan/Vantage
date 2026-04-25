@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITUP Command Center</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+  --bg-hover: #292e36;
+  --border: #30363d;
+  --border-light: #3d444d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #656d76;
+  --accent: #58a6ff;
+  --green: #3fb950;
+  --green-bg: rgba(63,185,80,0.12);
+  --yellow: #d29922;
+  --yellow-bg: rgba(210,153,34,0.12);
+  --orange: #db6d28;
+  --orange-bg: rgba(219,109,40,0.12);
+  --red: #f85149;
+  --red-bg: rgba(248,81,73,0.12);
+  --gray: #484f58;
+  --gray-bg: rgba(72,79,88,0.12);
+  --purple: #bc8cff;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-title { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); }
+
+.day-badge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.refresh-time { font-size: 0.8rem; color: var(--text-muted); }
+
+.btn-refresh {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+.btn-refresh:hover { background: var(--bg-hover); }
+
+.api-status {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gray);
+  display: inline-block;
+}
+.api-status.ok { background: var(--green); }
+.api-status.error { background: var(--red); }
+
+/* Progress Bar */
+.progress-bar-container {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 24px 12px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.progress-label { font-size: 0.75rem; color: var(--text-secondary); }
+.checkpoint-next {
+  font-size: 0.75rem;
+  color: var(--yellow);
+  font-weight: 500;
+}
+
+.progress-track {
+  position: relative;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: visible;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+.checkpoint-marker {
+  position: absolute;
+  top: -3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border);
+  transform: translateX(-50%);
+  cursor: default;
+}
+.checkpoint-marker.formal { border-color: var(--yellow); }
+.checkpoint-marker.passed { background: var(--green); border-color: var(--green); }
+.checkpoint-marker:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  z-index: 10;
+}
+
+/* Main Layout */
+.main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 100px);
+}
+
+.panel {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.panel-left {
+  border-right: 1px solid var(--border);
+  background: var(--bg-primary);
+}
+
+.panel-right {
+  background: var(--bg-primary);
+}
+
+.panel-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+/* Metric Cards */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metric-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: default;
+  transition: border-color 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.metric-card:hover { border-color: var(--border-light); }
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.metric-card.status-green::before { background: var(--green); }
+.metric-card.status-yellow::before { background: var(--yellow); }
+.metric-card.status-red::before { background: var(--red); }
+.metric-card.status-gray::before { background: var(--gray); }
+
+.metric-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.status-green .metric-value { color: var(--green); }
+.status-yellow .metric-value { color: var(--yellow); }
+.status-red .metric-value { color: var(--red); }
+.status-gray .metric-value { color: var(--gray); }
+
+.metric-target {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.metric-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-gray { background: var(--gray-bg); color: var(--gray); }
+
+.metric-detail {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Full-width card for AZD at bottom */
+.metric-card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+
+.tab-count {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+}
+.tab.active .tab-count { background: rgba(88,166,255,0.2); color: var(--accent); }
+
+/* Action Items */
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+
+.action-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.action-item:hover { border-color: var(--border-light); }
+
+.action-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.age-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.age-green { background: var(--green); }
+.age-yellow { background: var(--yellow); }
+.age-orange { background: var(--orange); }
+.age-red { background: var(--red); }
+
+.action-info { flex: 1; min-width: 0; }
+
+.action-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-age {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 55px;
+  text-align: right;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+.btn-sm:hover { background: var(--bg-hover); }
+
+.btn-approve {
+  background: var(--green-bg);
+  border-color: rgba(63,185,80,0.3);
+  color: var(--green);
+}
+.btn-approve:hover { background: rgba(63,185,80,0.22); }
+
+.btn-open {
+  color: var(--accent);
+  border-color: rgba(88,166,255,0.3);
+}
+
+.btn-copy {
+  color: var(--purple);
+  border-color: rgba(188,140,255,0.3);
+}
+
+/* Expandable reply area */
+.action-expand {
+  display: none;
+  padding: 0 16px 12px;
+  border-top: 1px solid var(--border);
+}
+.action-item.expanded .action-expand { display: block; }
+
+.reply-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.reply-input {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  resize: none;
+  min-height: 36px;
+  max-height: 120px;
+}
+.reply-input:focus { outline: none; border-color: var(--accent); }
+
+.btn-send {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.btn-send:hover { background: #4c94e6; }
+.btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.5; }
+.empty-state-text { font-size: 0.85rem; }
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+  z-index: 100;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--text-muted);
+  gap: 10px;
+}
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error banner */
+.error-banner {
+  background: var(--red-bg);
+  border-bottom: 1px solid rgba(248,81,73,0.3);
+  padding: 8px 24px;
+  font-size: 0.8rem;
+  color: var(--red);
+  display: none;
+}
+.error-banner.show { display: block; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .metrics-grid { grid-template-columns: 1fr; }
+  .header { padding: 10px 16px; }
+  .panel { padding: 16px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">ITUP Command Center</span>
+    <span class="day-badge" id="day-badge">Day --/90</span>
+  </div>
+  <div class="header-right">
+    <span class="api-status" id="api-status" title="API status"></span>
+    <span class="refresh-time" id="refresh-time">--</span>
+    <button class="btn-refresh" onclick="fetchAll()" id="refresh-btn">Refresh</button>
+  </div>
+</div>
+
+<div class="progress-bar-container">
+  <div class="progress-header">
+    <span class="progress-label" id="progress-label">--</span>
+    <span class="checkpoint-next" id="checkpoint-next">--</span>
+  </div>
+  <div class="progress-track" id="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+</div>
+
+<div class="error-banner" id="error-banner"></div>
+
+<div class="main">
+  <div class="panel panel-left">
+    <div class="panel-title">ITUP Metrics</div>
+    <div class="metrics-grid" id="metrics-grid">
+      <div class="loading"><div class="spinner"></div>Loading metrics...</div>
+    </div>
+  </div>
+
+  <div class="panel panel-right">
+    <div class="panel-title">Pending Actions</div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="reviews">PR Reviews<span class="tab-count" id="count-reviews">-</span></button>
+      <button class="tab" data-tab="myprs">My PRs<span class="tab-count" id="count-myprs">-</span></button>
+      <button class="tab" data-tab="workitems">Work Items<span class="tab-count" id="count-workitems">-</span></button>
+    </div>
+
+    <div id="tab-reviews" class="tab-content">
+      <div class="action-list" id="list-reviews">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+    <div id="tab-myprs" class="tab-content" style="display:none">
+      <div class="action-list" id="list-myprs">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+    <div id="tab-workitems" class="tab-content" style="display:none">
+      <div class="action-list" id="list-workitems">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========================================
+// Configuration
+// ========================================
+const API = window.location.origin;
+const REFRESH_MS = 5 * 60 * 1000;
+const TIMER_MS = 30 * 1000;
+
+const PLAN = {
+  start: new Date('2026-04-24T00:00:00+08:00'),
+  end: new Date('2026-07-23T00:00:00+08:00'),
+  totalDays: 90,
+  checkpoints: [
+    { name: 'Day 14', date: new Date('2026-05-08'), type: 'diagnostic', day: 14 },
+    { name: 'Day 30', date: new Date('2026-05-24'), type: 'formal', day: 30 },
+    { name: 'Day 45', date: new Date('2026-06-08'), type: 'diagnostic', day: 45 },
+    { name: 'Day 60', date: new Date('2026-06-23'), type: 'formal', day: 60 },
+    { name: 'Day 75', date: new Date('2026-07-08'), type: 'diagnostic', day: 75 },
+    { name: 'Day 90', date: new Date('2026-07-23'), type: 'formal', day: 90 },
+  ]
+};
+
+const TFS_BASE_URL = 'https://tfs.realpage.com/tfs/Realpage/PropertyManagement';
+
+let state = {
+  metrics: [],
+  reviews: [],
+  myPrs: [],
+  workItems: [],
+  activeTab: 'reviews',
+  refreshing: false
+};
+
+// ========================================
+// Initialization
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderPlanProgress();
+  setupTabs();
+  fetchAll();
+  setInterval(fetchAll, REFRESH_MS);
+  setInterval(updateAllTimers, TIMER_MS);
+});
+
+// ========================================
+// Plan Progress
+// ========================================
+function renderPlanProgress() {
+  const now = new Date();
+  const elapsed = Math.max(0, (now - PLAN.start) / (1000 * 60 * 60 * 24));
+  const dayNum = Math.min(Math.ceil(elapsed), PLAN.totalDays);
+  const pct = Math.min((elapsed / PLAN.totalDays) * 100, 100);
+
+  document.getElementById('day-badge').textContent = `Day ${dayNum}/${PLAN.totalDays}`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent =
+    `${pct.toFixed(1)}% complete`;
+
+  // Next checkpoint
+  const next = PLAN.checkpoints.find(c => c.date > now);
+  if (next) {
+    const daysTo = Math.ceil((next.date - now) / (1000 * 60 * 60 * 24));
+    document.getElementById('checkpoint-next').textContent =
+      `Next: ${next.name} (${next.type}) in ${daysTo}d`;
+  } else {
+    document.getElementById('checkpoint-next').textContent = 'Plan complete';
+  }
+
+  // Checkpoint markers
+  const track = document.getElementById('progress-track');
+  PLAN.checkpoints.forEach(cp => {
+    const cpPct = (cp.day / PLAN.totalDays) * 100;
+    const marker = document.createElement('div');
+    marker.className = 'checkpoint-marker' +
+      (cp.type === 'formal' ? ' formal' : '') +
+      (cp.date <= now ? ' passed' : '');
+    marker.style.left = cpPct + '%';
+    marker.title = `${cp.name} (${cp.type}) - ${cp.date.toLocaleDateString()}`;
+    track.appendChild(marker);
+  });
+}
+
+// ========================================
+// Tabs
+// ========================================
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.tab;
+      state.activeTab = target;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('tab-' + target).style.display = 'block';
+    });
+  });
+}
+
+// ========================================
+// Data Fetching
+// ========================================
+async function fetchAll() {
+  if (state.refreshing) return;
+  state.refreshing = true;
+  document.getElementById('refresh-btn').textContent = 'Refreshing...';
+
+  try {
+    const [metricsRes, pendingRes] = await Promise.all([
+      safeFetch('/api/itup-status'),
+      safeFetch('/api/pending')
+    ]);
+
+    if (metricsRes) {
+      state.metrics = metricsRes.metrics || [];
+      renderMetrics(state.metrics);
+    }
+
+    if (pendingRes) {
+      state.reviews = pendingRes.reviews || [];
+      state.myPrs = pendingRes.myPrs || [];
+      state.workItems = pendingRes.workItems || [];
+      renderActions();
+    }
+
+    setApiStatus('ok');
+    hideError();
+  } catch (err) {
+    setApiStatus('error');
+    showError('API connection failed: ' + err.message);
+  }
+
+  state.refreshing = false;
+  document.getElementById('refresh-btn').textContent = 'Refresh';
+  document.getElementById('refresh-time').textContent =
+    'Last: ' + new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function safeFetch(path) {
+  const res = await fetch(API + path);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+// ========================================
+// Metrics Rendering
+// ========================================
+function renderMetrics(metrics) {
+  const grid = document.getElementById('metrics-grid');
+  if (!metrics.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-text">No metrics data available</div></div>';
+    return;
+  }
+
+  grid.innerHTML = metrics.map(m => {
+    const statusClass = 'status-' + (m.status || 'gray');
+    const badgeClass = 'badge-' + (m.status || 'gray');
+    const badgeText = { green: 'On Track', yellow: 'Watch', red: 'At Risk', gray: 'No Data' }[m.status] || 'Unknown';
+    const fullWidth = m.id === 'azd_responsiveness' ? ' full-width' : '';
+
+    return `
+      <div class="metric-card ${statusClass}${fullWidth}" title="${esc(m.detail || '')}">
+        <div class="metric-name">${esc(m.name)}</div>
+        <div class="metric-value">${esc(m.displayValue || '--')}</div>
+        <div class="metric-target">Target: ${esc(m.target)}</div>
+        <span class="metric-badge ${badgeClass}">${badgeText}</span>
+        ${m.detail ? `<div class="metric-detail">${esc(m.detail)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ========================================
+// Actions Rendering
+// ========================================
+function renderActions() {
+  renderActionList('reviews', state.reviews, 'pr');
+  renderActionList('myprs', state.myPrs, 'pr');
+  renderActionList('workitems', state.workItems, 'wi');
+
+  document.getElementById('count-reviews').textContent = state.reviews.length;
+  document.getElementById('count-myprs').textContent = state.myPrs.length;
+  document.getElementById('count-workitems').textContent = state.workItems.length;
+}
+
+function renderActionList(listId, items, type) {
+  const container = document.getElementById('list-' + listId);
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">&#10003;</div>
+        <div class="empty-state-text">All clear. Nothing pending.</div>
+      </div>`;
+    return;
+  }
+
+  // Sort by age descending (oldest first = most urgent)
+  items.sort((a, b) => (b.ageMinutes || 0) - (a.ageMinutes || 0));
+
+  container.innerHTML = items.map((item, idx) => {
+    const ageClass = getAgeClass(item.ageMinutes);
+    const ageDisplay = formatDuration(item.ageMinutes);
+    const itemId = `${listId}-${idx}`;
+    const tfsUrl = item.url || '#';
+    const isReview = listId === 'reviews';
+
+    return `
+      <div class="action-item" id="item-${itemId}">
+        <div class="action-header" onclick="toggleExpand('${itemId}')">
+          <div class="age-dot ${ageClass}"></div>
+          <div class="action-info">
+            <div class="action-title">${esc(item.title || 'Untitled')}</div>
+            <div class="action-meta">
+              <span>${esc(item.author || 'Unknown')}</span>
+              <span>${esc(item.contextLabel || '')}</span>
+            </div>
+          </div>
+          <div class="action-age ${ageClass.replace('age-', 'status-')}" data-created="${item.createdUtc || ''}">${ageDisplay}</div>
+          <div class="action-buttons" onclick="event.stopPropagation()">
+            ${isReview ? `<button class="btn-sm btn-approve" onclick="quickApprove('${item.prId}','${item.repoId}')">Approve</button>` : ''}
+            <button class="btn-sm btn-open" onclick="window.open('${esc(tfsUrl)}','_blank')">Open</button>
+            <button class="btn-sm btn-copy" onclick="copyForReview(${JSON.stringify(item).replace(/'/g, '\\\'')})">Copy</button>
+          </div>
+        </div>
+        <div class="action-expand">
+          ${item.preview ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:8px;padding:8px;background:var(--bg-tertiary);border-radius:4px;max-height:80px;overflow:auto">${esc(item.preview)}</div>` : ''}
+          <div class="reply-row">
+            <textarea class="reply-input" id="reply-${itemId}" placeholder="Type a reply..." rows="1"
+              oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="btn-send" onclick="sendReply('${type}','${item.prId || item.wiId}','${itemId}','${item.repoId || ''}','${item.threadId || ''}')">Send</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleExpand(itemId) {
+  const el = document.getElementById('item-' + itemId);
+  if (el) el.classList.toggle('expanded');
+}
+
+// ========================================
+// Age / Timer Helpers
+// ========================================
+function getAgeClass(minutes) {
+  if (minutes == null) return 'age-green';
+  if (minutes < 30) return 'age-green';
+  if (minutes < 60) return 'age-yellow';
+  if (minutes < 240) return 'age-orange';
+  return 'age-red';
+}
+
+function formatDuration(minutes) {
+  if (minutes == null) return '--';
+  if (minutes < 60) return Math.round(minutes) + 'm';
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  if (h < 24) return h + 'h' + (m > 0 ? m + 'm' : '');
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  return d + 'd' + (rh > 0 ? rh + 'h' : '');
+}
+
+function updateAllTimers() {
+  // Re-calculate ages from createdUtc timestamps
+  document.querySelectorAll('.action-age[data-created]').forEach(el => {
+    const created = el.dataset.created;
+    if (!created) return;
+    const mins = (Date.now() - new Date(created).getTime()) / 60000;
+    el.textContent = formatDuration(mins);
+    // Update dot color
+    const dot = el.closest('.action-header')?.querySelector('.age-dot');
+    if (dot) {
+      dot.className = 'age-dot ' + getAgeClass(mins);
+    }
+  });
+}
+
+// ========================================
+// Actions
+// ========================================
+async function quickApprove(prId, repoId) {
+  if (!confirm('Approve PR ' + prId + '?')) return;
+  try {
+    const res = await fetch(`${API}/api/vote/pr/${prId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repoId, vote: 10 })
+    });
+    if (res.ok) {
+      showToast('Approved PR ' + prId, 'success');
+      setTimeout(fetchAll, 1000);
+    } else {
+      const err = await res.text();
+      showToast('Failed: ' + err, 'error');
+    }
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+async function sendReply(type, id, itemId, repoId, threadId) {
+  const input = document.getElementById('reply-' + itemId);
+  const content = input?.value?.trim();
+  if (!content) return;
+
+  const btn = input.nextElementSibling;
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const body = type === 'pr'
+      ? { repoId, threadId, content }
+      : { content };
+
+    const res = await fetch(`${API}/api/respond/${type}/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      input.value = '';
+      showToast('Reply sent', 'success');
+      setTimeout(fetchAll, 1000);
+    } else {
+      const err = await res.text();
+      showToast('Failed: ' + err, 'error');
+    }
+  } catch (e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send';
+}
+
+function copyForReview(item) {
+  const text = [
+    '--- Review Request ---',
+    `From: ${item.author || 'Unknown'}`,
+    `Type: ${item.contextLabel || 'Unknown'}`,
+    `ID: ${item.prId || item.wiId || 'N/A'}`,
+    `Age: ${formatDuration(item.ageMinutes)}`,
+    `Title: ${item.title || 'Untitled'}`,
+    item.preview ? `Content: ${item.preview}` : '',
+    `URL: ${item.url || 'N/A'}`,
+    '---',
+    'Draft response: '
+  ].filter(Boolean).join('\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard', 'success');
+  });
+}
+
+// ========================================
+// UI Helpers
+// ========================================
+function setApiStatus(status) {
+  const el = document.getElementById('api-status');
+  el.className = 'api-status ' + status;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function hideError() {
+  document.getElementById('error-banner').classList.remove('show');
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function esc(str) {
+  if (!str) return '';
+  const el = document.createElement('span');
+  el.textContent = str;
+  return el.innerHTML;
+}
+</script>
+</body>
+</html>

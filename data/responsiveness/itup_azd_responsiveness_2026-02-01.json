@@ -1,0 +1,145 @@
+﻿{
+    "prReviews":  [
+                      {
+                          "PRId":  390674,
+                          "Author":  "Sharvani Yellanki",
+                          "CreatedPHT":  "\/Date(1771565878302)\/",
+                          "ResponsePHT":  "\/Date(1775475234940)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  17002,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  389797,
+                          "Author":  "Nagesh Deshpande",
+                          "CreatedPHT":  "\/Date(1771323839455)\/",
+                          "ResponsePHT":  "\/Date(1775458721590)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  18178.7,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  391145,
+                          "Author":  "JayAlvin Co",
+                          "CreatedPHT":  "\/Date(1771844056256)\/",
+                          "ResponsePHT":  "\/Date(1774969545590)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  14040,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  391032,
+                          "Author":  "Edgar Fortin",
+                          "CreatedPHT":  "\/Date(1771825627341)\/",
+                          "ResponsePHT":  "\/Date(1774954199340)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  14292.9,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      }
+                  ],
+    "mentions":  [
+                     {
+                         "WorkItemId":  2588473,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1770704518820)\/",
+                         "ReplyPHT":  "\/Date(1771907956007)\/",
+                         "BizMinutes":  5297.3,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2588473,
+                         "MentionBy":  "Maurice Gollayan",
+                         "MentionPHT":  "\/Date(1770719345560)\/",
+                         "ReplyPHT":  "\/Date(1771907956007)\/",
+                         "BizMinutes":  5079.3,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2588473,
+                         "MentionBy":  "Aljun Christian Luna",
+                         "MentionPHT":  "\/Date(1771558843090)\/",
+                         "ReplyPHT":  "\/Date(1771907956007)\/",
+                         "BizMinutes":  1138.5,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2588473,
+                         "MentionBy":  "Aljun Christian Luna",
+                         "MentionPHT":  "\/Date(1771912241000)\/",
+                         "ReplyPHT":  "\/Date(1771985605587)\/",
+                         "BizMinutes":  322.7,
+                         "OnTime":  true
+                     },
+                     {
+                         "WorkItemId":  1460107,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1770233410887)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     }
+                 ],
+    "weekOf":  "2026-02-01",
+    "generated":  "2026-04-25T17:57:50.8253552+08:00",
+    "daysBack":  28,
+    "prComments":  [
+                       {
+                           "PRId":  390498,
+                           "Reviewer":  "Patricia Bea Perez",
+                           "CommentPHT":  "\/Date(1771507003503)\/",
+                           "ResponsePHT":  null,
+                           "ResponseType":  "none",
+                           "BizMinutes":  null,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  389004,
+                           "Reviewer":  "JayAlvin Co",
+                           "CommentPHT":  "\/Date(1770959476990)\/",
+                           "ResponsePHT":  "\/Date(1771244450227)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  828.7,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  389004,
+                           "Reviewer":  "Patricia Bea Perez",
+                           "CommentPHT":  "\/Date(1771420751077)\/",
+                           "ResponsePHT":  "\/Date(1771421198947)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  0,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  389004,
+                           "Reviewer":  "Patricia Bea Perez",
+                           "CommentPHT":  "\/Date(1771420863760)\/",
+                           "ResponsePHT":  "\/Date(1771421198947)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  0,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  389004,
+                           "Reviewer":  "Patricia Bea Perez",
+                           "CommentPHT":  "\/Date(1771422019043)\/",
+                           "ResponsePHT":  "\/Date(1771422157311)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  0,
+                           "OnTime":  true
+                       }
+                   ],
+    "summary":  {
+                    "mentionAvgBiz":  3566.4,
+                    "totalOnTime":  4,
+                    "prReviewAvgBiz":  15878.4,
+                    "prCommentAvgBiz":  207.2,
+                    "totalResponded":  11,
+                    "totalPending":  2,
+                    "overallPct":  36.4
+                }
+}

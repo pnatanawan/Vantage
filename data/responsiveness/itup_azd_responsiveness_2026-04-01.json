@@ -1,0 +1,517 @@
+﻿{
+    "prReviews":  [
+                      {
+                          "PRId":  400765,
+                          "Author":  "Muntyaz Ahmad",
+                          "CreatedPHT":  "\/Date(1775665110103)\/",
+                          "ResponsePHT":  "\/Date(1777011202743)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  6253.4,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  400636,
+                          "Author":  "Nagesh Deshpande",
+                          "CreatedPHT":  "\/Date(1775646113286)\/",
+                          "ResponsePHT":  "\/Date(1776846585547)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  5309.8,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  402509,
+                          "Author":  "Phani Pallantla",
+                          "CreatedPHT":  "\/Date(1776267308644)\/",
+                          "ResponsePHT":  "\/Date(1776307321400)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  102,
+                          "OnTime":  true,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  402394,
+                          "Author":  "Muntyaz Ahmad",
+                          "CreatedPHT":  "\/Date(1776249485597)\/",
+                          "ResponsePHT":  "\/Date(1776251486597)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  0,
+                          "OnTime":  true,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  401410,
+                          "Author":  "Dave Blommer",
+                          "CreatedPHT":  "\/Date(1775837121918)\/",
+                          "ResponsePHT":  "\/Date(1776128292890)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  540,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  399859,
+                          "Author":  "Marlon Rivera",
+                          "CreatedPHT":  "\/Date(1775460455680)\/",
+                          "ResponsePHT":  "\/Date(1775468622593)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  136.1,
+                          "OnTime":  true,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  399935,
+                          "Author":  "Saritha Katta",
+                          "CreatedPHT":  "\/Date(1775473813537)\/",
+                          "ResponsePHT":  "\/Date(1775551601460)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  466.7,
+                          "OnTime":  true,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  399334,
+                          "Author":  "Safia Shaik",
+                          "CreatedPHT":  "\/Date(1775114940472)\/",
+                          "ResponsePHT":  "\/Date(1775535765457)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  1433.7,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  399960,
+                          "Author":  "Kamaljit Singh",
+                          "CreatedPHT":  "\/Date(1775478573218)\/",
+                          "ResponsePHT":  "\/Date(1775531601067)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  133.4,
+                          "OnTime":  true,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  404542,
+                          "Author":  "Vidyarani Gujjara",
+                          "CreatedPHT":  "\/Date(1776990374429)\/",
+                          "ResponsePHT":  "\/Date(1777033201717)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  540,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      },
+                      {
+                          "PRId":  404310,
+                          "Author":  "JayAlvin Co",
+                          "CreatedPHT":  "\/Date(1776934944449)\/",
+                          "ResponsePHT":  "\/Date(1777022001220)\/",
+                          "ResponseType":  "comment",
+                          "BizMinutes":  550.9,
+                          "OnTime":  false,
+                          "IsRequired":  false
+                      }
+                  ],
+    "mentions":  [
+                     {
+                         "WorkItemId":  2148096,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776271177490)\/",
+                         "ReplyPHT":  "\/Date(1777110859593)\/",
+                         "BizMinutes":  3780,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2148096,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776329637410)\/",
+                         "ReplyPHT":  "\/Date(1777110859593)\/",
+                         "BizMinutes":  3306,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2650168,
+                         "MentionBy":  "GraceMarie Garcia",
+                         "MentionPHT":  "\/Date(1776053408487)\/",
+                         "ReplyPHT":  "\/Date(1777006460520)\/",
+                         "BizMinutes":  4904.2,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2650168,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776269816013)\/",
+                         "ReplyPHT":  "\/Date(1777006460520)\/",
+                         "BizMinutes":  3474.3,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  1145562,
+                         "MentionBy":  "GraceMarie Garcia",
+                         "MentionPHT":  "\/Date(1776138027683)\/",
+                         "ReplyPHT":  "\/Date(1776742246893)\/",
+                         "BizMinutes":  2690.3,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  1145562,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776329346003)\/",
+                         "ReplyPHT":  "\/Date(1776742246893)\/",
+                         "BizMinutes":  1301.7,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  1145562,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776329708583)\/",
+                         "ReplyPHT":  "\/Date(1776742246893)\/",
+                         "BizMinutes":  1295.6,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  1145562,
+                         "MentionBy":  "GraceMarie Garcia",
+                         "MentionPHT":  "\/Date(1776353111703)\/",
+                         "ReplyPHT":  "\/Date(1776742246893)\/",
+                         "BizMinutes":  1230.8,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  1885799,
+                         "MentionBy":  "GraceMarie Garcia",
+                         "MentionPHT":  "\/Date(1776352898503)\/",
+                         "ReplyPHT":  "\/Date(1776749921230)\/",
+                         "BizMinutes":  1358.7,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2724601,
+                         "MentionBy":  "Leelakrishna Balu",
+                         "MentionPHT":  "\/Date(1776055774433)\/",
+                         "ReplyPHT":  "\/Date(1776261559657)\/",
+                         "BizMinutes":  1390.4,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2724601,
+                         "MentionBy":  "GraceMarie Garcia",
+                         "MentionPHT":  "\/Date(1776352212400)\/",
+                         "ReplyPHT":  "\/Date(1777015250167)\/",
+                         "BizMinutes":  3080.8,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2724601,
+                         "MentionBy":  "Hong Lu",
+                         "MentionPHT":  "\/Date(1776914639130)\/",
+                         "ReplyPHT":  "\/Date(1777015250167)\/",
+                         "BizMinutes":  776.9,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2768546,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1776654649043)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2766096,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1776309185733)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2768504,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1775550234790)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2768506,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1775550287533)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2750026,
+                         "MentionBy":  "Maurice Gollayan",
+                         "MentionPHT":  "\/Date(1775110768263)\/",
+                         "ReplyPHT":  "\/Date(1775119586047)\/",
+                         "BizMinutes":  147,
+                         "OnTime":  true
+                     },
+                     {
+                         "WorkItemId":  2766099,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1776044797613)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     }
+                 ],
+    "weekOf":  "2026-04-01",
+    "generated":  "2026-04-25T18:10:20.5132044+08:00",
+    "daysBack":  25,
+    "prComments":  [
+                       {
+                           "PRId":  400975,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775897199373)\/",
+                           "ResponsePHT":  "\/Date(1776082981837)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  540,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  400975,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775897216090)\/",
+                           "ResponsePHT":  "\/Date(1776082981837)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  540,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  400975,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775897386173)\/",
+                           "ResponsePHT":  "\/Date(1776082981837)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  540,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  400975,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775897472153)\/",
+                           "ResponsePHT":  "\/Date(1776082981837)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  540,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  400975,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775897534677)\/",
+                           "ResponsePHT":  "\/Date(1776082981837)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  540,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  404185,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1777031451700)\/",
+                           "ResponsePHT":  "\/Date(1777105741890)\/",
+                           "ResponseType":  "reply",
+                           "BizMinutes":  0,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  404185,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1777031664147)\/",
+                           "ResponsePHT":  "\/Date(1777108139580)\/",
+                           "ResponseType":  "reply",
+                           "BizMinutes":  0,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775198120830)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  32.5,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775198126023)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  32.4,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775198198157)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  31.2,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775198316360)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  29.2,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775198573723)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  25,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199062533)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  16.8,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199266003)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  13.4,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199557507)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  8.6,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199570060)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  8.4,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199703070)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  6.1,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199739767)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  5.5,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199762040)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  5.2,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199840540)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  3.8,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775199907147)\/",
+                           "ResponsePHT":  "\/Date(1775200071135)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  2.7,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775200873700)\/",
+                           "ResponsePHT":  "\/Date(1775209717270)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  147.4,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775201042200)\/",
+                           "ResponsePHT":  "\/Date(1775209717270)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  144.6,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775201542717)\/",
+                           "ResponsePHT":  "\/Date(1775209717270)\/",
+                           "ResponseType":  "push",
+                           "BizMinutes":  136.2,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775443062783)\/",
+                           "ResponsePHT":  "\/Date(1775481716187)\/",
+                           "ResponseType":  "reply",
+                           "BizMinutes":  442.3,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775443133630)\/",
+                           "ResponsePHT":  "\/Date(1775481461100)\/",
+                           "ResponseType":  "reply",
+                           "BizMinutes":  441.1,
+                           "OnTime":  true
+                       },
+                       {
+                           "PRId":  399397,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1775529761250)\/",
+                           "ResponsePHT":  "\/Date(1775708295590)\/",
+                           "ResponseType":  "reply",
+                           "BizMinutes":  1175.6,
+                           "OnTime":  false
+                       }
+                   ],
+    "summary":  {
+                    "mentionAvgBiz":  2210.5,
+                    "totalOnTime":  27,
+                    "prReviewAvgBiz":  1406,
+                    "prCommentAvgBiz":  200.3,
+                    "totalResponded":  51,
+                    "totalPending":  0,
+                    "overallPct":  52.9
+                }
+}

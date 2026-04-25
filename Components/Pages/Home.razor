@@ -1,0 +1,232 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using Vantage.Models
+@using Vantage.Services
+@inject MetricsService MetricsSvc
+@inject PendingActionsService ActionsSvc
+@inject IOptions<VantageSettings> Settings
+@using Microsoft.Extensions.Options
+
+<PageTitle>Vantage — ITUP Dashboard</PageTitle>
+
+<div class="dashboard-shell">
+    @* ── Left: Metrics Panel ── *@
+    <div class="metrics-panel">
+        <div class="panel-header">
+            <h2>ITUP Metrics</h2>
+            <button class="refresh-btn" @onclick="RefreshAll" disabled="@_loading">
+                @if (_loading) { <span class="loading-spinner"></span> } else { <span>↻ Refresh</span> }
+            </button>
+        </div>
+
+        <div class="metrics-grid">
+            @foreach (var m in _metrics)
+            {
+                <div class="metric-card @m.Status.ToString().ToLower()">
+                    <div class="metric-name">@m.Name</div>
+                    <div class="metric-value">@m.DisplayValue</div>
+                    <div class="metric-target">@m.Target</div>
+                    <div class="metric-detail">@m.Detail</div>
+                </div>
+            }
+        </div>
+
+        @* ── Progress Bar ── *@
+        <div class="progress-section">
+            <div class="progress-header">
+                <span>Day @_plan.CurrentDay / @_plan.TotalDays</span>
+                <span>@(_plan.ProgressPercent.ToString("0"))%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: @(_plan.ProgressPercent.ToString("0.0"))%"></div>
+                @foreach (var cp in _plan.Checkpoints)
+                {
+                    var cls = cp.IsPassed ? "passed" : (cp == _plan.NextCheckpoint ? "next" : "upcoming");
+                    <div class="checkpoint-marker @cls" style="left: @(cp.PositionPercent(_plan.TotalDays).ToString("0.0"))%"
+                         title="@cp.Name — Day @cp.Day">
+                        <span class="checkpoint-label">@cp.Name</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* ── Right: Actions Panel ── *@
+    <div class="actions-panel">
+        <div class="panel-header">
+            <h2>Pending Actions</h2>
+        </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn @(_activeTab == Tab.Reviews ? "active" : "")" @onclick="() => _activeTab = Tab.Reviews">
+                Reviews <span class="tab-badge">@_actions.Reviews.Count</span>
+            </button>
+            <button class="tab-btn @(_activeTab == Tab.MyPrs ? "active" : "")" @onclick="() => _activeTab = Tab.MyPrs">
+                My PRs <span class="tab-badge">@_actions.MyPrs.Count</span>
+            </button>
+            <button class="tab-btn @(_activeTab == Tab.WorkItems ? "active" : "")" @onclick="() => _activeTab = Tab.WorkItems">
+                Work Items <span class="tab-badge">@_actions.WorkItems.Count</span>
+            </button>
+        </div>
+
+        @{ var items = ActiveItems; }
+        @if (items.Count == 0)
+        {
+            <div class="empty-state">Nothing pending ✓</div>
+        }
+        else
+        {
+            <div class="action-list">
+                @foreach (var item in items)
+                {
+                    <div class="action-item">
+                        <div class="age-dot @GetAgeDotClass(item.AgeMinutes)"></div>
+                        <div class="action-body">
+                            <div class="action-title">
+                                <a href="@item.Url" target="_blank">@item.Title</a>
+                            </div>
+                            <div class="action-meta">
+                                <span>@item.Author</span>
+                                <span>@FormatAge(item.AgeMinutes)</span>
+                                @if (!string.IsNullOrEmpty(item.ContextLabel))
+                                {
+                                    <span>@item.ContextLabel</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(item.Preview))
+                            {
+                                <div class="action-preview">@item.Preview</div>
+                            }
+                            <div class="action-buttons">
+                                @if (_activeTab == Tab.Reviews)
+                                {
+                                    <button class="action-btn approve" @onclick="() => ApprovePr(item)">✓ Approve</button>
+                                }
+                                <button class="action-btn" @onclick="() => CopyId(item)">Copy ID</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@* ── Toast container ── *@
+<div class="toast-container">
+    @foreach (var t in _toasts)
+    {
+        <div class="toast-msg @(t.IsError ? "error" : "success")">@t.Message</div>
+    }
+</div>
+
+@code {
+    enum Tab { Reviews, MyPrs, WorkItems }
+
+    private Tab _activeTab = Tab.Reviews;
+    private bool _loading;
+    private List<MetricCard> _metrics = [];
+    private PendingActionsResult _actions = new();
+    private PlanConfig _plan = new();
+
+    private List<PendingAction> ActiveItems => _activeTab switch
+    {
+        Tab.Reviews => _actions.Reviews,
+        Tab.MyPrs => _actions.MyPrs,
+        Tab.WorkItems => _actions.WorkItems,
+        _ => []
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _plan = Settings.Value.Plan;
+        await RefreshAll();
+    }
+
+    private async Task RefreshAll()
+    {
+        _loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var metricsTask = Task.Run(() => MetricsSvc.GetMetrics());
+            var actionsTask = ActionsSvc.GetAllAsync();
+            await Task.WhenAll(metricsTask, actionsTask);
+
+            _metrics = metricsTask.Result;
+            _actions = actionsTask.Result;
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Refresh failed: {ex.Message}", true);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ApprovePr(PendingAction item)
+    {
+        try
+        {
+            await ActionsSvc.VotePrAsync(item.Id, item.RepoId ?? "", 10);
+            ShowToast($"Approved PR {item.Id}");
+            _actions.Reviews.Remove(item);
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Approve failed: {ex.Message}", true);
+        }
+    }
+
+    private async Task CopyId(PendingAction item)
+    {
+        // JS interop for clipboard would go here; for now just toast
+        ShowToast($"ID: {item.Id}");
+        await Task.CompletedTask;
+    }
+
+    // ── Helpers ──
+
+    private static string GetAgeDotClass(double mins)
+    {
+        if (mins < 60) return "fresh";
+        if (mins < 240) return "aging";
+        if (mins < 480) return "stale";
+        return "critical";
+    }
+
+    private static string FormatAge(double mins)
+    {
+        if (mins < 60) return $"{(int)mins}m";
+        if (mins < 1440) return $"{(int)(mins / 60)}h";
+        return $"{(int)(mins / 1440)}d";
+    }
+
+    // ── Toasts ──
+
+    class ToastItem
+    {
+        public string Message { get; set; } = "";
+        public bool IsError { get; set; }
+    }
+
+    private readonly List<ToastItem> _toasts = [];
+
+    private void ShowToast(string message, bool isError = false)
+    {
+        var toast = new ToastItem { Message = message, IsError = isError };
+        _toasts.Add(toast);
+        _ = RemoveToastAfterDelay(toast);
+    }
+
+    private async Task RemoveToastAfterDelay(ToastItem toast)
+    {
+        await Task.Delay(3000);
+        _toasts.Remove(toast);
+        await InvokeAsync(StateHasChanged);
+    }
+}

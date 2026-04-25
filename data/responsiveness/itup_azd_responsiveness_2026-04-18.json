@@ -1,0 +1,62 @@
+﻿{
+    "prReviews":  {
+                      "PRId":  404542,
+                      "Author":  "Vidyarani Gujjara",
+                      "CreatedPHT":  "\/Date(1776990374429)\/",
+                      "ResponsePHT":  "\/Date(1777033201717)\/",
+                      "ResponseType":  "comment",
+                      "BizMinutes":  540,
+                      "OnTime":  false,
+                      "IsRequired":  false
+                  },
+    "mentions":  [
+                     {
+                         "WorkItemId":  2724601,
+                         "MentionBy":  "Hong Lu",
+                         "MentionPHT":  "\/Date(1776914639130)\/",
+                         "ReplyPHT":  "\/Date(1777015250167)\/",
+                         "BizMinutes":  776.9,
+                         "OnTime":  false
+                     },
+                     {
+                         "WorkItemId":  2768546,
+                         "MentionBy":  "Jomar Bingco",
+                         "MentionPHT":  "\/Date(1776654649043)\/",
+                         "ReplyPHT":  null,
+                         "BizMinutes":  null,
+                         "OnTime":  false
+                     }
+                 ],
+    "weekOf":  "2026-04-18",
+    "generated":  "2026-04-25T15:11:18.7410935+08:00",
+    "daysBack":  7,
+    "prComments":  [
+                       {
+                           "PRId":  404185,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1777031451700)\/",
+                           "ResponsePHT":  null,
+                           "ResponseType":  "none",
+                           "BizMinutes":  null,
+                           "OnTime":  false
+                       },
+                       {
+                           "PRId":  404185,
+                           "Reviewer":  "Maurice Gollayan",
+                           "CommentPHT":  "\/Date(1777031664147)\/",
+                           "ResponsePHT":  null,
+                           "ResponseType":  "none",
+                           "BizMinutes":  null,
+                           "OnTime":  false
+                       }
+                   ],
+    "summary":  {
+                    "mentionAvgBiz":  776.9,
+                    "totalOnTime":  0,
+                    "prReviewAvgBiz":  540,
+                    "prCommentAvgBiz":  0,
+                    "totalResponded":  2,
+                    "totalPending":  2,
+                    "overallPct":  0
+                }
+}
