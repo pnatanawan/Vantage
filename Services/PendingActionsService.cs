@@ -147,7 +147,7 @@ public class PendingActionsService
         }
     }
 
-    // ── Active work items assigned to me ─────────────────────
+    // ── Active work items assigned to me (with unreplied comment detection) ──
     private async Task<List<PendingAction>> GetActiveWorkItemsAsync()
     {
         try
@@ -181,6 +181,10 @@ public class PendingActionsService
 
             if (details is null) return [];
 
+            // Fetch latest comment for each work item in parallel
+            var commentTasks = ids.ToDictionary(id => id, id => GetLatestWorkItemCommentAsync(id));
+            await Task.WhenAll(commentTasks.Values);
+
             var results = new List<PendingAction>();
             foreach (var wi in GetArray(details.Value, "value"))
             {
@@ -191,17 +195,27 @@ public class PendingActionsService
                 var title = f.TryGetProp("System.Title")?.GetString() ?? "";
                 var changed = DateTimeOffset.Parse(f.GetProperty("System.ChangedDate").GetString()!);
 
+                var comment = commentTasks[wiId].Result;
+                var needsReply = comment is not null &&
+                    !string.Equals(comment.Value.AuthorId, _settings.MyGuid, StringComparison.OrdinalIgnoreCase);
+
+                // Only show work items where someone else left the last comment (needs reply)
+                if (!needsReply) continue;
+
                 results.Add(new PendingAction
                 {
                     Type = "work-item",
                     Id = wiId,
                     Title = $"{wiType} {wiId} - {title}",
-                    CreatedUtc = changed,
-                    ContextLabel = state,
+                    Author = comment!.Value.AuthorName,
+                    CreatedUtc = comment.Value.Date,
+                    ContextLabel = $"Reply to {comment.Value.AuthorName}",
+                    Preview = comment.Value.Text,
                     Url = $"{_settings.TfsBaseUrl}/_workitems/edit/{wiId}"
                 });
             }
-            return results;
+
+            return results.OrderByDescending(a => a.CreatedUtc).ToList();
         }
         catch (Exception ex)
         {
@@ -210,7 +224,98 @@ public class PendingActionsService
         }
     }
 
+    private readonly record struct WiComment(string AuthorId, string AuthorName, string Text, DateTimeOffset Date);
+
+    private async Task<WiComment?> GetLatestWorkItemCommentAsync(int workItemId)
+    {
+        try
+        {
+            var data = await _tfs.GetAsync($"_apis/wit/workItems/{workItemId}/comments");
+            if (data is null) return null;
+
+            var comments = GetArray(data.Value, "comments").ToList();
+            if (comments.Count == 0) return null;
+            var latest = comments[^1];
+
+            var authorId = latest.TryGetProp("createdBy")?.TryGetProp("id")?.GetString() ?? "";
+            var authorName = latest.TryGetProp("createdBy")?.TryGetProp("displayName")?.GetString() ?? "";
+            var text = StripHtml(latest.TryGetProp("text")?.GetString() ?? "");
+            var dateStr = latest.TryGetProp("createdDate")?.GetString();
+            var date = dateStr is not null ? DateTimeOffset.Parse(dateStr) : DateTimeOffset.MinValue;
+
+            return new WiComment(authorId, authorName, text, date);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to fetch comments for WI {Id}", workItemId);
+            return null;
+        }
+    }
+
     // ── Write operations ─────────────────────────────────────
+
+    public async Task<AiUsageResult> GetAiUsageAsync(DateTime sinceDate)
+    {
+        try
+        {
+            var since = sinceDate.ToString("yyyy-MM-dd");
+
+            // Total work items assigned since ITUP start
+            var totalWiql = new
+            {
+                query = $"""
+                    SELECT [System.Id]
+                    FROM WorkItems
+                    WHERE [System.AssignedTo] = '{_settings.MyName}'
+                      AND [System.WorkItemType] IN ('User Story', 'Bug', 'Task')
+                      AND [System.State] IN ('Active', 'Ready to Work', 'Resolved', 'Closed')
+                      AND [System.ChangedDate] >= '{since}'
+                    ORDER BY [System.ChangedDate] DESC
+                    """
+            };
+
+            var totalResult = await _tfs.PostAsync("_apis/wit/wiql", totalWiql);
+            var totalIds = totalResult is not null
+                ? GetArray(totalResult.Value, "workItems").Select(w => w.GetProperty("id").GetInt32()).ToList()
+                : [];
+
+            if (totalIds.Count == 0)
+                return new AiUsageResult();
+
+            // Fetch AI usage field for all items
+            var idList = string.Join(",", totalIds.Take(200));
+            var details = await _tfs.GetAsync(
+                $"_apis/wit/workitems?ids={idList}&fields=System.Id,Custom.AIAssistantUsage");
+
+            if (details is null)
+                return new AiUsageResult { TotalItems = totalIds.Count };
+
+            var aiValues = new List<double>();
+            foreach (var wi in GetArray(details.Value, "value"))
+            {
+                var f = wi.GetProperty("fields");
+                var aiUsage = f.TryGetProp("Custom.AIAssistantUsage");
+                if (aiUsage is not null && aiUsage.Value.ValueKind == JsonValueKind.Number)
+                {
+                    var val = aiUsage.Value.GetDouble();
+                    if (val > 0) aiValues.Add(val);
+                }
+            }
+
+            return new AiUsageResult
+            {
+                TotalItems = totalIds.Count,
+                AiAssistedItems = aiValues.Count,
+                AvgAiUsage = aiValues.Count > 0 ? Math.Round(aiValues.Average(), 1) : 0
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to fetch AI usage metrics");
+            return new AiUsageResult();
+        }
+    }
+
     public async Task VotePrAsync(int prId, string repoId, int vote)
     {
         await _tfs.PutAsync(

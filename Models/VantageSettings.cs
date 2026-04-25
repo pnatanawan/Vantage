@@ -15,4 +15,5 @@ public class VantageSettings
     public string? AnthropicApiKey { get; set; }
     public string OpenAiModel { get; set; } = "gpt-4o";
     public string AnthropicModel { get; set; } = "claude-sonnet-4-20250514";
+    public string PreferredAiProvider { get; set; } = "OpenAI";
 }

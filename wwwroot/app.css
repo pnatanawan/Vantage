@@ -42,9 +42,61 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* ── Layout ───────────────────────────────────── */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 48px;
+    padding: 0 20px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.app-header-brand {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.app-header-shift {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.app-header-shift.on-shift {
+    color: var(--green);
+    background: var(--green-bg);
+}
+
+.app-header-shift.off-shift {
+    color: var(--text-muted);
+    background: var(--gray-bg);
+}
+
+.shift-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.on-shift .shift-dot { background: var(--green); }
+.off-shift .shift-dot { background: var(--text-muted); }
+
 .dashboard-shell {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 48px);
     overflow: hidden;
 }
 
@@ -93,6 +145,54 @@ a:hover { text-decoration: underline; }
     font-size: 12px;
 }
 .refresh-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+/* ── Swim Lanes ───────────────────────────────── */
+.metrics-lanes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.swim-lane {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.lane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.lane-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.lane-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.lane-status.green { background: rgba(76, 175, 80, 0.15); color: var(--green); }
+.lane-status.yellow { background: rgba(255, 193, 7, 0.15); color: var(--yellow); }
+.lane-status.red { background: rgba(244, 67, 54, 0.15); color: var(--red); }
+.lane-status.gray { background: rgba(158, 158, 158, 0.15); color: var(--gray); }
+
+.lane-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
 
 /* ── Metric Cards ─────────────────────────────── */
 .metrics-grid {
@@ -313,6 +413,18 @@ a:hover { text-decoration: underline; }
     overflow: hidden;
 }
 
+/* ── Chat status badges ── */
+.chat-status {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.chat-status.late { background: var(--orange-bg); color: var(--orange); }
+.chat-status.no-reply { background: var(--red-bg); color: var(--red); }
+
 .action-buttons {
     display: flex;
     gap: 6px;
@@ -332,6 +444,37 @@ a:hover { text-decoration: underline; }
 .action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
 .action-btn.approve { border-color: var(--green); color: var(--green); }
 .action-btn.approve:hover { background: var(--green-bg); }
+.action-btn.reply { border-color: var(--blue); color: var(--blue); }
+.action-btn.reply:hover { background: rgba(56, 132, 255, 0.1); }
+
+.reply-panel {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reply-input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.reply-input:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.reply-actions {
+    display: flex;
+    gap: 6px;
+}
 
 /* ── Empty State ──────────────────────────────── */
 .empty-state {
@@ -389,6 +532,13 @@ a:hover { text-decoration: underline; }
 
 /* ── Blazor Error UI ──────────────────────────── */
 #blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.6rem 1.25rem;
+    z-index: 1000;
     background: var(--red-bg);
     border-top: 2px solid var(--red);
     color: var(--red);

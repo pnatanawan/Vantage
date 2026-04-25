@@ -16,4 +16,5 @@ public class MetricCard
     public string Target { get; set; } = "";
     public MetricStatus Status { get; set; } = MetricStatus.Gray;
     public string Detail { get; set; } = "";
+    public string Category { get; set; } = "";
 }

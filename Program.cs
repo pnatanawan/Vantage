@@ -28,6 +28,12 @@ builder.Services.AddHttpClient<TfsApiService>()
 // Application services
 builder.Services.AddSingleton<MetricsService>();
 builder.Services.AddScoped<PendingActionsService>();
+builder.Services.AddSingleton<TeamsChatService>();
+
+// AI services — IChatClient via Microsoft.Extensions.AI, keys via User Secrets
+builder.Services.AddSingleton<OpenAiService>();
+builder.Services.AddSingleton<AnthropicService>();
+builder.Services.AddSingleton<IAiService, FallbackAiService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

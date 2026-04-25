@@ -1,6 +1,27 @@
 ﻿@inherits LayoutComponentBase
 
+<header class="app-header">
+    <div class="app-header-brand">Vantage</div>
+    <div class="app-header-shift @(_isOnShift ? "on-shift" : "off-shift")">
+        <span class="shift-dot"></span>
+        @(_isOnShift ? "On-Shift" : "Off-Shift")
+    </div>
+</header>
+
 @Body
+
+@code {
+    private bool _isOnShift;
+
+    protected override void OnInitialized()
+    {
+        var now = DateTime.Now;
+        _isOnShift = now.DayOfWeek >= DayOfWeek.Monday
+                  && now.DayOfWeek <= DayOfWeek.Friday
+                  && now.Hour >= 9
+                  && now.Hour < 18;
+    }
+}
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

@@ -5,28 +5,46 @@
 @inject MetricsService MetricsSvc
 @inject PendingActionsService ActionsSvc
 @inject IOptions<VantageSettings> Settings
+@inject IJSRuntime JS
+@inject TeamsChatService ChatSvc
 @using Microsoft.Extensions.Options
 
-<PageTitle>Vantage — ITUP Dashboard</PageTitle>
+<PageTitle>Vantage — Performance Dashboard</PageTitle>
 
 <div class="dashboard-shell">
     @* ── Left: Metrics Panel ── *@
     <div class="metrics-panel">
         <div class="panel-header">
-            <h2>ITUP Metrics</h2>
-            <button class="refresh-btn" @onclick="RefreshAll" disabled="@_loading">
-                @if (_loading) { <span class="loading-spinner"></span> } else { <span>↻ Refresh</span> }
+            <h2>Performance Metrics</h2>
+            <button class="refresh-btn" @onclick="RefreshAll" disabled="@(_metricsLoading || _actionsLoading)">
+                @if (_metricsLoading || _actionsLoading) { <span class="loading-spinner"></span> } else { <span>↻ Refresh</span> }
             </button>
         </div>
 
-        <div class="metrics-grid">
-            @foreach (var m in _metrics)
+        @if (_metricsLoading)
+        {
+            <div class="empty-state">Loading metrics…</div>
+        }
+
+        <div class="metrics-lanes">
+            @foreach (var group in _metricsByCategory)
             {
-                <div class="metric-card @m.Status.ToString().ToLower()">
-                    <div class="metric-name">@m.Name</div>
-                    <div class="metric-value">@m.DisplayValue</div>
-                    <div class="metric-target">@m.Target</div>
-                    <div class="metric-detail">@m.Detail</div>
+                <div class="swim-lane">
+                    <div class="lane-header">
+                        <span class="lane-title">@group.Key</span>
+                        <span class="lane-status @GetLaneStatusClass(group)">@GetLaneStatusLabel(group)</span>
+                    </div>
+                    <div class="lane-cards">
+                        @foreach (var m in group)
+                        {
+                            <div class="metric-card @m.Status.ToString().ToLower()">
+                                <div class="metric-name">@m.Name</div>
+                                <div class="metric-value">@m.DisplayValue</div>
+                                <div class="metric-target">@m.Target</div>
+                                <div class="metric-detail">@m.Detail</div>
+                            </div>
+                        }
+                    </div>
                 </div>
             }
         </div>
@@ -67,47 +85,101 @@
             <button class="tab-btn @(_activeTab == Tab.WorkItems ? "active" : "")" @onclick="() => _activeTab = Tab.WorkItems">
                 Work Items <span class="tab-badge">@_actions.WorkItems.Count</span>
             </button>
+            <button class="tab-btn @(_activeTab == Tab.Chats ? "active" : "")" @onclick="() => _activeTab = Tab.Chats">
+                Chats <span class="tab-badge">@_chats.Count</span>
+            </button>
         </div>
 
-        @{ var items = ActiveItems; }
-        @if (items.Count == 0)
+        @if (_actionsLoading)
         {
-            <div class="empty-state">Nothing pending ✓</div>
+            <div class="empty-state">Loading actions…</div>
+        }
+        else if (_activeTab == Tab.Chats)
+        {
+            @if (_chats.Count == 0)
+            {
+                <div class="empty-state">All chats responded ✓</div>
+            }
+            else
+            {
+                <div class="action-list">
+                    @foreach (var chat in _chats)
+                    {
+                        <div class="action-item">
+                            <div class="age-dot @GetChatDotClass(chat.Status)"></div>
+                            <div class="action-body">
+                                <div class="action-title">@chat.OtherPerson</div>
+                                <div class="action-meta">
+                                    <span class="chat-status @chat.Status.ToLower().Replace(" ", "-")">@chat.Status</span>
+                                    @if (chat.ResponseMinutes is > 0)
+                                    {
+                                        <span>@FormatAge(chat.ResponseMinutes.Value)</span>
+                                    }
+                                    <span>@chat.InboundPHT.ToString("MMM d h:mm tt")</span>
+                                </div>
+                                <div class="action-preview">@chat.ChatLabel</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         }
         else
         {
-            <div class="action-list">
-                @foreach (var item in items)
-                {
-                    <div class="action-item">
-                        <div class="age-dot @GetAgeDotClass(item.AgeMinutes)"></div>
-                        <div class="action-body">
-                            <div class="action-title">
-                                <a href="@item.Url" target="_blank">@item.Title</a>
-                            </div>
-                            <div class="action-meta">
-                                <span>@item.Author</span>
-                                <span>@FormatAge(item.AgeMinutes)</span>
-                                @if (!string.IsNullOrEmpty(item.ContextLabel))
+            var items = ActiveItems;
+            @if (items.Count == 0)
+            {
+                <div class="empty-state">Nothing pending ✓</div>
+            }
+            else
+            {
+                <div class="action-list">
+                    @foreach (var item in items)
+                    {
+                        <div class="action-item">
+                            <div class="age-dot @GetAgeDotClass(item.AgeMinutes)"></div>
+                            <div class="action-body">
+                                <div class="action-title">
+                                    <a href="@item.Url" target="_blank">@item.Title</a>
+                                </div>
+                                <div class="action-meta">
+                                    <span>@item.Author</span>
+                                    <span>@FormatAge(item.AgeMinutes)</span>
+                                    @if (!string.IsNullOrEmpty(item.ContextLabel))
+                                    {
+                                        <span>@item.ContextLabel</span>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.Preview))
                                 {
-                                    <span>@item.ContextLabel</span>
+                                    <div class="action-preview">@item.Preview</div>
                                 }
-                            </div>
-                            @if (!string.IsNullOrEmpty(item.Preview))
-                            {
-                                <div class="action-preview">@item.Preview</div>
-                            }
-                            <div class="action-buttons">
-                                @if (_activeTab == Tab.Reviews)
+                                <div class="action-buttons">
+                                    @if (_activeTab == Tab.Reviews)
+                                    {
+                                        <button class="action-btn approve" @onclick="() => ApprovePr(item)">✓ Approve</button>
+                                    }
+                                    @if (_activeTab == Tab.WorkItems || (_activeTab == Tab.MyPrs && item.ThreadId is not null))
+                                    {
+                                        <button class="action-btn reply" @onclick="() => ToggleReply(item)">💬 Reply</button>
+                                    }
+                                    <button class="action-btn" @onclick="() => CopyId(item)">Copy ID</button>
+                                </div>
+                                @if (_replyingToId == item.Id && _replyingToType == item.Type)
                                 {
-                                    <button class="action-btn approve" @onclick="() => ApprovePr(item)">✓ Approve</button>
+                                    <div class="reply-panel">
+                                        <textarea class="reply-input" @bind="_replyText" @bind:event="oninput" placeholder="Type your reply..." rows="3"></textarea>
+                                        <div class="reply-actions">
+                                            <button class="action-btn approve" @onclick="() => SendReply(item)" disabled="@(string.IsNullOrWhiteSpace(_replyText))">Send</button>
+                                            <button class="action-btn" @onclick="CancelReply">Cancel</button>
+                                        </div>
+                                    </div>
                                 }
-                                <button class="action-btn" @onclick="() => CopyId(item)">Copy ID</button>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            }
         }
     </div>
 </div>
@@ -121,13 +193,29 @@
 </div>
 
 @code {
-    enum Tab { Reviews, MyPrs, WorkItems }
+    enum Tab { Reviews, MyPrs, WorkItems, Chats }
 
     private Tab _activeTab = Tab.Reviews;
-    private bool _loading;
+    private bool _metricsLoading;
+    private bool _actionsLoading;
     private List<MetricCard> _metrics = [];
     private PendingActionsResult _actions = new();
+    private List<TeamsChatItem> _chats = [];
     private PlanConfig _plan = new();
+
+    private bool _loading => _metricsLoading || _actionsLoading;
+
+    // Reply state
+    private int? _replyingToId;
+    private string? _replyingToType;
+    private string _replyText = "";
+
+    private static readonly string[] CategoryOrder = ["Responsiveness", "Attendance", "Quality", "Delivery", "Refinement", "AI Usage"];
+
+    private List<IGrouping<string, MetricCard>> _metricsByCategory =>
+        _metrics.GroupBy(m => m.Category)
+            .OrderBy(g => Array.IndexOf(CategoryOrder, g.Key) is var i && i >= 0 ? i : 99)
+            .ToList();
 
     private List<PendingAction> ActiveItems => _activeTab switch
     {
@@ -145,25 +233,42 @@
 
     private async Task RefreshAll()
     {
-        _loading = true;
+        _metricsLoading = true;
+        _actionsLoading = true;
         StateHasChanged();
 
+        // Fetch AI usage from TFS + metrics from evidence log in parallel
         try
         {
-            var metricsTask = Task.Run(() => MetricsSvc.GetMetrics());
-            var actionsTask = ActionsSvc.GetAllAsync();
-            await Task.WhenAll(metricsTask, actionsTask);
+            var aiTask = ActionsSvc.GetAiUsageAsync(_plan.Start);
+            var chatsTask = Task.Run(() => ChatSvc.GetRecentChats());
 
-            _metrics = metricsTask.Result;
-            _actions = actionsTask.Result;
+            var aiUsage = await aiTask;
+            _metrics = await Task.Run(() => MetricsSvc.GetMetrics(aiUsage));
+            _chats = await chatsTask;
         }
         catch (Exception ex)
         {
-            ShowToast($"Refresh failed: {ex.Message}", true);
+            ShowToast($"Metrics load failed: {ex.Message}", true);
         }
         finally
         {
-            _loading = false;
+            _metricsLoading = false;
+            StateHasChanged();
+        }
+
+        // Actions load independently (TFS API — slower)
+        try
+        {
+            _actions = await ActionsSvc.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Actions load failed: {ex.Message}", true);
+        }
+        finally
+        {
+            _actionsLoading = false;
             StateHasChanged();
         }
     }
@@ -184,12 +289,91 @@
 
     private async Task CopyId(PendingAction item)
     {
-        // JS interop for clipboard would go here; for now just toast
-        ShowToast($"ID: {item.Id}");
-        await Task.CompletedTask;
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", item.Id);
+            ShowToast($"Copied: {item.Id}");
+        }
+        catch
+        {
+            ShowToast($"Copy failed — ID: {item.Id}", true);
+        }
+    }
+
+    // ── Reply ──
+
+    private void ToggleReply(PendingAction item)
+    {
+        if (_replyingToId == item.Id && _replyingToType == item.Type)
+        {
+            CancelReply();
+            return;
+        }
+        _replyingToId = item.Id;
+        _replyingToType = item.Type;
+        _replyText = "";
+    }
+
+    private void CancelReply()
+    {
+        _replyingToId = null;
+        _replyingToType = null;
+        _replyText = "";
+    }
+
+    private async Task SendReply(PendingAction item)
+    {
+        if (string.IsNullOrWhiteSpace(_replyText)) return;
+        try
+        {
+            if (item.Type == "work-item")
+            {
+                await ActionsSvc.CommentOnWorkItemAsync(item.Id, _replyText);
+                ShowToast($"Replied to WI {item.Id}");
+                item.ContextLabel = "Replied ✓";
+                item.Preview = "";
+                item.Author = "";
+            }
+            else if (item.Type == "my-pr" && item.ThreadId is not null)
+            {
+                await ActionsSvc.ReplyToPrThreadAsync(item.Id, item.RepoId ?? "", item.ThreadId.Value, _replyText);
+                ShowToast($"Replied to PR {item.Id}");
+                _actions.MyPrs.Remove(item);
+            }
+            CancelReply();
+        }
+        catch (Exception ex)
+        {
+            ShowToast($"Reply failed: {ex.Message}", true);
+        }
     }
 
     // ── Helpers ──
+
+    private static string GetLaneStatusClass(IEnumerable<MetricCard> cards)
+    {
+        var statuses = cards.Select(c => c.Status).ToList();
+        if (statuses.Any(s => s == MetricStatus.Red)) return "red";
+        if (statuses.Any(s => s == MetricStatus.Yellow)) return "yellow";
+        if (statuses.All(s => s == MetricStatus.Gray)) return "gray";
+        return "green";
+    }
+
+    private static string GetLaneStatusLabel(IEnumerable<MetricCard> cards)
+    {
+        var statuses = cards.Select(c => c.Status).ToList();
+        if (statuses.Any(s => s == MetricStatus.Red)) return "Needs Attention";
+        if (statuses.Any(s => s == MetricStatus.Yellow)) return "At Risk";
+        if (statuses.All(s => s == MetricStatus.Gray)) return "No Data";
+        return "On Track";
+    }
+
+    private static string GetChatDotClass(string status) => status switch
+    {
+        "Late" => "stale",
+        "No Reply" => "critical",
+        _ => "fresh"
+    };
 
     private static string GetAgeDotClass(double mins)
     {

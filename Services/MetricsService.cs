@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Vantage.Models;
@@ -15,7 +16,7 @@ public class MetricsService
         _logger = logger;
     }
 
-    public List<MetricCard> GetMetrics()
+    public List<MetricCard> GetMetrics(AiUsageResult? aiUsage = null)
     {
         if (!File.Exists(_settings.EvidenceLogPath))
         {
@@ -30,25 +31,26 @@ public class MetricsService
         var content = File.ReadAllText(_settings.EvidenceLogPath);
         var planStart = _settings.Plan.Start;
 
-        var parsers = new (string Name, Func<string, DateTime, MetricCard> Parse)[]
+        var parsers = new (string Name, string Category, Func<string, DateTime, MetricCard> Parse)[]
         {
-            ("Teams Chat", ParseTeams),
-            ("Ceremonies", ParseCeremony),
-            ("PR Rework", ParsePrRework),
-            ("Story Delivery", ParseStoryDelivery),
-            ("Defects", ParseDefects),
-            ("QA Handoff", ParseQaHandoff),
-            ("AI Usage", ParseAiUsage),
-            ("Blockers", ParseBlockers),
-            ("AZD Response", ParseAzd),
+            ("Teams Chat", "Responsiveness", ParseTeams),
+            ("Ceremonies", "Attendance", ParseCeremony),
+            ("PR Rework", "Quality", ParsePrRework),
+            ("Story Delivery", "Delivery", ParseStoryDelivery),
+            ("Defects", "Quality", ParseDefects),
+            ("QA Handoff", "Quality", ParseQaHandoff),
+            ("Blockers", "Delivery", ParseBlockers),
+            ("AZD Response", "Refinement", ParseAzd),
         };
 
         var results = new List<MetricCard>();
-        foreach (var (name, parse) in parsers)
+        foreach (var (name, category, parse) in parsers)
         {
             try
             {
-                results.Add(parse(content, planStart));
+                var card = parse(content, planStart);
+                card.Category = category;
+                results.Add(card);
             }
             catch (Exception ex)
             {
@@ -60,6 +62,9 @@ public class MetricsService
                 });
             }
         }
+
+        // AI Usage metric from live TFS data (not file-parsed)
+        results.Add(BuildAiUsageCard(aiUsage));
 
         return results;
     }
@@ -154,7 +159,7 @@ public class MetricsService
             return MakeGray("story_delivery", "Story Delivery", ">=2 med/mo", "No monthly rollup data.");
 
         var monthName = DateTime.Now.ToString("MMM yyyy");
-        var rx = new Regex($@"\|\s*{Regex.Escape(monthName)}\s*\|\s*(\d*)\s*\|\s*(\d*)\s*\|");
+        var rx = new Regex($@"\|\s*{Regex.Escape(monthName)}[^|]*\|\s*(\d+)[^|]*\|\s*(\d+)");
         var match = rx.Match(section);
 
         if (!match.Success || string.IsNullOrWhiteSpace(match.Groups[1].Value))
@@ -228,22 +233,24 @@ public class MetricsService
         };
     }
 
-    private MetricCard ParseAiUsage(string content, DateTime planStart)
+    private static MetricCard BuildAiUsageCard(AiUsageResult? ai)
     {
-        var section = ExtractSection(content, "## AI USAGE EVIDENCE", "## BLOCKER");
-        var rx = new Regex(@"\|\s*\d{4}-\d{2}-\d{2}\s*\|[^|]+\|[^|]+\|[^|]+\|[^|]+\|");
-        var matches = section is not null
-            ? rx.Matches(section).Cast<Match>().Where(m => !m.Value.Contains("_example_") && !m.Value.Contains("Date |")).ToList()
-            : [];
+        const string target = ">=50% by Day 60";
+        if (ai is null || ai.TotalItems == 0)
+            return MakeGray("ai_usage", "AI Usage", target, "No work items found since ITUP start.");
 
-        if (matches.Count == 0)
-            return MakeGray("ai_usage", "AI Usage", ">=50% by Day 60", "No AI usage entries yet. Log usages as you work.");
+        var pct = ai.Percentage;
+        var status = pct >= 50 ? MetricStatus.Green
+            : pct >= 30 ? MetricStatus.Yellow
+            : MetricStatus.Red;
 
         return new MetricCard
         {
-            Id = "ai_usage", Name = "AI Usage", Target = ">=50% by Day 60",
-            Status = MetricStatus.Gray, DisplayValue = $"{matches.Count}",
-            Detail = $"{matches.Count} entries logged. Track against assigned stories."
+            Id = "ai_usage", Name = "AI Usage", Target = target,
+            Category = "AI Usage",
+            Status = status,
+            DisplayValue = $"{pct:0.#}%",
+            Detail = $"{ai.AiAssistedItems}/{ai.TotalItems} items, avg {ai.AvgAiUsage}% usage"
         };
     }
 
@@ -274,26 +281,97 @@ public class MetricsService
 
     private MetricCard ParseAzd(string content, DateTime planStart)
     {
+        // Try markdown evidence log first
         var section = ExtractSection(content, "## AZD RESPONSIVENESS", "## STORY DELIVERY");
         var rx = new Regex(@"\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|[^|]+\|\s*([\d.]+)%");
-        var matches = section is not null
+        var mdMatches = section is not null
             ? rx.Matches(section).Cast<Match>()
                 .Where(m => DateTime.Parse(m.Groups[1].Value) >= planStart).ToList()
             : [];
 
-        if (matches.Count == 0)
+        if (mdMatches.Count > 0)
+        {
+            var last = mdMatches[^1];
+            var pct = double.Parse(last.Groups[4].Value);
+            var status = pct >= 90 ? MetricStatus.Green : pct >= 80 ? MetricStatus.Yellow : MetricStatus.Red;
+
+            return new MetricCard
+            {
+                Id = "azd_responsiveness", Name = "AZD Response", Target = "<8 biz hrs",
+                Status = status, DisplayValue = $"{pct}%",
+                Detail = $"Week of {last.Groups[1].Value}: {last.Groups[3].Value}/{last.Groups[2].Value} on-time"
+            };
+        }
+
+        // Fall back to JSON files in data/responsiveness/
+        return ParseAzdFromJson(planStart);
+    }
+
+    private MetricCard ParseAzdFromJson(DateTime planStart)
+    {
+        var dataDir = Path.GetDirectoryName(_settings.EvidenceLogPath)!;
+        var respDir = Path.Combine(dataDir, "responsiveness");
+
+        if (!Directory.Exists(respDir))
             return MakeGray("azd_responsiveness", "AZD Response", "<8 biz hrs",
-                "Run _itup_azd_responsiveness.ps1 -AppendToLog to populate.");
+                "No responsiveness data directory found.");
 
-        var last = matches[^1];
-        var pct = double.Parse(last.Groups[4].Value);
-        var status = pct >= 90 ? MetricStatus.Green : pct >= 80 ? MetricStatus.Yellow : MetricStatus.Red;
+        var files = Directory.GetFiles(respDir, "itup_azd_responsiveness_*.json")
+            .OrderBy(f => f).ToList();
 
+        if (files.Count == 0)
+            return MakeGray("azd_responsiveness", "AZD Response", "<8 biz hrs",
+                "Run azd-responsiveness.ps1 to collect data.");
+
+        var entries = new List<(DateTime weekOf, double pct, int onTime, int total)>();
+        foreach (var file in files)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(file));
+                var root = doc.RootElement;
+                var weekOf = DateTime.Parse(root.GetProperty("weekOf").GetString()!);
+                var summary = root.GetProperty("summary");
+                var pct = summary.GetProperty("overallPct").GetDouble();
+                var onTime = summary.GetProperty("totalOnTime").GetInt32();
+                var responded = summary.GetProperty("totalResponded").GetInt32();
+                var pending = summary.GetProperty("totalPending").GetInt32();
+                entries.Add((weekOf, pct, onTime, responded + pending));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse AZD JSON: {File}", file);
+            }
+        }
+
+        if (entries.Count == 0)
+            return MakeGray("azd_responsiveness", "AZD Response", "<8 biz hrs",
+                "No parseable responsiveness data.");
+
+        var itup = entries.Where(e => e.weekOf >= planStart).ToList();
+
+        if (itup.Count > 0)
+        {
+            var latest = itup[^1];
+            var status = latest.pct >= 90 ? MetricStatus.Green
+                : latest.pct >= 80 ? MetricStatus.Yellow
+                : MetricStatus.Red;
+
+            return new MetricCard
+            {
+                Id = "azd_responsiveness", Name = "AZD Response", Target = "<8 biz hrs",
+                Status = status, DisplayValue = $"{latest.pct}%",
+                Detail = $"Week of {latest.weekOf:yyyy-MM-dd}: {latest.onTime}/{latest.total} on-time"
+            };
+        }
+
+        // Pre-ITUP baseline (same pattern as ParseTeams)
+        var recent = entries[^1];
         return new MetricCard
         {
             Id = "azd_responsiveness", Name = "AZD Response", Target = "<8 biz hrs",
-            Status = status, DisplayValue = $"{pct}%",
-            Detail = $"Week of {last.Groups[1].Value}: {last.Groups[3].Value}/{last.Groups[2].Value} on-time"
+            Status = MetricStatus.Gray, DisplayValue = "--",
+            Detail = $"Pre-ITUP: {recent.pct}% (week of {recent.weekOf:yyyy-MM-dd})"
         };
     }
 
@@ -301,7 +379,7 @@ public class MetricsService
 
     private static string? ExtractSection(string content, string startPattern, string endMarker)
     {
-        var startMatch = Regex.Match(content, startPattern, RegexOptions.Multiline);
+        var startMatch = Regex.Match(content, Regex.Escape(startPattern), RegexOptions.Multiline);
         if (!startMatch.Success) return null;
 
         var startIdx = startMatch.Index + startMatch.Length;

@@ -21,3 +21,11 @@ public class PendingActionsResult
     public List<PendingAction> MyPrs { get; set; } = [];
     public List<PendingAction> WorkItems { get; set; } = [];
 }
+
+public class AiUsageResult
+{
+    public int TotalItems { get; set; }
+    public int AiAssistedItems { get; set; }
+    public double Percentage => TotalItems > 0 ? Math.Round(100.0 * AiAssistedItems / TotalItems, 1) : 0;
+    public double AvgAiUsage { get; set; }
+}
