@@ -108,16 +108,39 @@
                         <div class="action-item">
                             <div class="age-dot @GetChatDotClass(chat.Status)"></div>
                             <div class="action-body">
-                                <div class="action-title">@chat.OtherPerson</div>
+                                <div class="action-title">
+                                    @{ var personName = GetChatPersonName(chat.OtherPerson); }
+                                    <span class="person-name">@personName</span>
+                                    <span class="chat-source-badge">@chat.ChatSource</span>
+                                </div>
                                 <div class="action-meta">
                                     <span class="chat-status @chat.Status.ToLower().Replace(" ", "-")">@chat.Status</span>
-                                    @if (chat.ResponseMinutes is > 0)
-                                    {
-                                        <span>@FormatAge(chat.ResponseMinutes.Value)</span>
-                                    }
                                     <span>@chat.InboundPHT.ToString("MMM d h:mm tt")</span>
                                 </div>
-                                <div class="action-preview">@chat.ChatLabel</div>
+                                <div class="action-preview">
+                                    @if (chat.Status == "No Reply")
+                                    {
+                                        <span>@chat.ChatLabel — no response yet (@FormatAge((DateTime.Now - chat.InboundPHT).TotalMinutes) ago)</span>
+                                    }
+                                    else if (chat.ResponseMinutes is > 0)
+                                    {
+                                        <span>@chat.ChatLabel — @(chat.ResponseType) after @FormatAge(chat.ResponseMinutes.Value)</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@chat.ChatLabel</span>
+                                    }
+                                </div>
+                                <div class="action-buttons">
+                                    @if (chat.Status == "No Reply")
+                                    {
+                                        <span class="action-hint">💬 Find in Teams to reply</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="action-hint">Responded — review if follow-up needed</span>
+                                    }
+                                </div>
                             </div>
                         </div>
                     }
@@ -366,6 +389,12 @@
         if (statuses.Any(s => s == MetricStatus.Yellow)) return "At Risk";
         if (statuses.All(s => s == MetricStatus.Gray)) return "No Data";
         return "On Track";
+    }
+
+    private static string GetChatPersonName(string otherPerson)
+    {
+        var idx = otherPerson.IndexOf(" (in:", StringComparison.Ordinal);
+        return idx > 0 ? otherPerson[..idx] : otherPerson;
     }
 
     private static string GetChatDotClass(string status) => status switch

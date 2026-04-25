@@ -425,6 +425,19 @@ a:hover { text-decoration: underline; }
 .chat-status.late { background: var(--orange-bg); color: var(--orange); }
 .chat-status.no-reply { background: var(--red-bg); color: var(--red); }
 
+.chat-source-badge {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-left: 8px;
+    font-weight: 400;
+}
+
+a.action-btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
 .action-buttons {
     display: flex;
     gap: 6px;
@@ -446,6 +459,8 @@ a:hover { text-decoration: underline; }
 .action-btn.approve:hover { background: var(--green-bg); }
 .action-btn.reply { border-color: var(--blue); color: var(--blue); }
 .action-btn.reply:hover { background: rgba(56, 132, 255, 0.1); }
+.action-hint { font-size: 0.78rem; color: var(--text-secondary); font-style: italic; }
+.person-name { font-weight: 600; color: var(--text-primary); }
 
 .reply-panel {
     margin-top: 8px;
