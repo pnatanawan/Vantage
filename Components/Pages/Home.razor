@@ -11,14 +11,39 @@
 
 <PageTitle>Vantage — Performance Dashboard</PageTitle>
 
+@* ── Sticky Days Tracker ── *@
+<div class="days-tracker-bar">
+    <div class="days-tracker-label">
+        <span class="days-tracker-day">Day @_plan.CurrentDay / @_plan.TotalDays</span>
+        <span class="days-tracker-pct">@(_plan.ProgressPercent.ToString("0"))%</span>
+    </div>
+    <div class="days-tracker-track">
+        <div class="progress-fill" style="width: @(_plan.ProgressPercent.ToString("0.0"))%"></div>
+        @foreach (var cp in _plan.Checkpoints)
+        {
+            var cls = cp.IsPassed ? "passed" : (cp == _plan.NextCheckpoint ? "next" : "upcoming");
+            <div class="checkpoint-marker @cls" style="left: @(cp.PositionPercent(_plan.TotalDays).ToString("0.0"))%"
+                 title="@cp.Name — Day @cp.Day">
+                <span class="checkpoint-label">@cp.Name</span>
+            </div>
+        }
+    </div>
+</div>
+
 <div class="dashboard-shell">
     @* ── Left: Metrics Panel ── *@
-    <div class="metrics-panel">
+    <div class="metrics-panel @(_metricsExpanded ? "expanded" : "")" @onclick="ExpandMetrics">
         <div class="panel-header">
             <h2>Performance Metrics</h2>
-            <button class="refresh-btn" @onclick="RefreshAll" disabled="@(_metricsLoading || _actionsLoading)">
-                @if (_metricsLoading || _actionsLoading) { <span class="loading-spinner"></span> } else { <span>↻ Refresh</span> }
-            </button>
+            <div class="panel-header-actions">
+                @if (_metricsExpanded)
+                {
+                    <button class="refresh-btn" @onclick="CollapseMetrics" @onclick:stopPropagation="true" title="Back to dashboard">✕ Close</button>
+                }
+                <button class="refresh-btn" @onclick="RefreshAll" @onclick:stopPropagation="true" disabled="@(_metricsLoading || _actionsLoading)">
+                    @if (_metricsLoading || _actionsLoading) { <span class="loading-spinner"></span> } else { <span>↻ Refresh</span> }
+                </button>
+            </div>
         </div>
 
         @if (_metricsLoading)
@@ -49,28 +74,14 @@
             }
         </div>
 
-        @* ── Progress Bar ── *@
-        <div class="progress-section">
-            <div class="progress-header">
-                <span>Day @_plan.CurrentDay / @_plan.TotalDays</span>
-                <span>@(_plan.ProgressPercent.ToString("0"))%</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill" style="width: @(_plan.ProgressPercent.ToString("0.0"))%"></div>
-                @foreach (var cp in _plan.Checkpoints)
-                {
-                    var cls = cp.IsPassed ? "passed" : (cp == _plan.NextCheckpoint ? "next" : "upcoming");
-                    <div class="checkpoint-marker @cls" style="left: @(cp.PositionPercent(_plan.TotalDays).ToString("0.0"))%"
-                         title="@cp.Name — Day @cp.Day">
-                        <span class="checkpoint-label">@cp.Name</span>
-                    </div>
-                }
-            </div>
-        </div>
+        @if (!_metricsExpanded)
+        {
+            <div class="expand-hint">Click to expand</div>
+        }
     </div>
 
     @* ── Right: Actions Panel ── *@
-    <div class="actions-panel">
+    <div class="actions-panel @(_metricsExpanded ? "hidden" : "")">
         <div class="panel-header">
             <h2>Pending Actions</h2>
         </div>
@@ -221,6 +232,7 @@
     private Tab _activeTab = Tab.Reviews;
     private bool _metricsLoading;
     private bool _actionsLoading;
+    private bool _metricsExpanded;
     private List<MetricCard> _metrics = [];
     private PendingActionsResult _actions = new();
     private List<TeamsChatItem> _chats = [];
@@ -369,6 +381,18 @@
         {
             ShowToast($"Reply failed: {ex.Message}", true);
         }
+    }
+
+    // ── Metrics expand/collapse ──
+
+    private void ExpandMetrics()
+    {
+        if (!_metricsExpanded) _metricsExpanded = true;
+    }
+
+    private void CollapseMetrics()
+    {
+        _metricsExpanded = false;
     }
 
     // ── Helpers ──

@@ -96,7 +96,7 @@ a:hover { text-decoration: underline; }
 
 .dashboard-shell {
     display: flex;
-    height: calc(100vh - 48px);
+    height: calc(100vh - 48px - 44px);
     overflow: hidden;
 }
 
@@ -109,6 +109,50 @@ a:hover { text-decoration: underline; }
     display: flex;
     flex-direction: column;
     gap: 12px;
+    cursor: pointer;
+    transition: width 0.25s ease, min-width 0.25s ease;
+}
+
+.metrics-panel.expanded {
+    width: 100%;
+    min-width: 100%;
+    cursor: default;
+    border-right: none;
+}
+
+.metrics-panel.expanded .lane-cards {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.metrics-panel.expanded .metric-card {
+    padding: 16px;
+}
+
+.metrics-panel.expanded .metric-value {
+    font-size: 32px;
+}
+
+.metrics-panel.expanded .metric-detail {
+    font-size: 12px;
+}
+
+.expand-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 4px 0 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.metrics-panel:hover .expand-hint {
+    opacity: 1;
+}
+
+.panel-header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
 }
 
 .actions-panel {
@@ -117,6 +161,11 @@ a:hover { text-decoration: underline; }
     padding: 16px;
     display: flex;
     flex-direction: column;
+    transition: opacity 0.2s ease;
+}
+
+.actions-panel.hidden {
+    display: none;
 }
 
 /* ── Header ───────────────────────────────────── */
@@ -257,31 +306,41 @@ a:hover { text-decoration: underline; }
     line-height: 1.3;
 }
 
-/* ── Progress Bar ─────────────────────────────── */
-.progress-section {
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
+/* ── Days Tracker Bar (always visible) ────────── */
+.days-tracker-bar {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 24px 18px;
+    flex-shrink: 0;
 }
 
-.progress-header {
+.days-tracker-label {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
     color: var(--text-muted);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
-.progress-track {
+.days-tracker-day {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.days-tracker-pct {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.days-tracker-track {
     position: relative;
     height: 8px;
     background: var(--bg-tertiary);
     border-radius: 4px;
     overflow: visible;
-    margin-bottom: 20px;
 }
 
-.progress-fill {
+.days-tracker-track .progress-fill {
     height: 100%;
     background: var(--accent);
     border-radius: 4px;
